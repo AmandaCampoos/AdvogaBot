@@ -1,0 +1,6 @@
+langchain
+langchain-community
+pypdf
+boto3
+chromadb
+python-dotenv
