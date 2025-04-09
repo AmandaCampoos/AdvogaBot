@@ -17,7 +17,7 @@ else:
 s3 = session.client('s3')
 
 # === CONFIGURAÇÕES ===
-BUCKET_NAME = "amanda-rag-bucket" # colocar o nome do seu bucket aqui
+BUCKET_NAME = "jose-rag-bucket" # colocar o nome do seu bucket aqui
 LOCAL_FOLDER = "../dataset"
 PREFIX = "dataset/"
 

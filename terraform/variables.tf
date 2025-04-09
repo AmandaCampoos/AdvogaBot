@@ -10,7 +10,7 @@ variable "instance_type" {
 
 variable "bucket_name" {
   description = "Nome do bucket S3"
-  default     = "amanda-rag-bucket" 
+  default     = "jose-rag-bucket" 
 }
 
 variable "project_name" {
