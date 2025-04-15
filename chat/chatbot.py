@@ -65,7 +65,20 @@ def init_rag_system():
                 "top_p": 0.9
             }
         )
-    
+        
+        # Criação da cadeia RAG com configuração robusta
+        qa_chain = RetrievalQA.from_chain_type(
+            llm=llm,
+            chain_type="stuff",
+            retriever=vectorstore.as_retriever(
+                search_type="similarity",
+                search_kwargs={"k": 3}
+            ),
+            chain_type_kwargs={"prompt": PROMPT},
+            return_source_documents=True
+        )
+        
+        return qa_chain
     
     except Exception as e:
         st.error(f"Erro crítico durante inicialização: {str(e)}")
