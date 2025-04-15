@@ -36,7 +36,24 @@ def init_rag_system():
             embedding_function=embeddings
         )
         
+        # Template de prompt otimizado
+        prompt_template = """
+        Você é um assistente jurídico especializado em consulta de documentos legais. Baseie suas respostas estritamente nos documentos fornecidos.
+        Se não souber a resposta, diga que não encontrou informações suficientes.
         
+        Contexto: 
+        {context}
+        
+        Pergunta: 
+        {question}
+        
+        Resposta jurídica:
+        """
+        
+        PROMPT = PromptTemplate(
+            template=prompt_template,
+            input_variables=["context", "question"]
+        )
     
     except Exception as e:
         st.error(f"Erro crítico durante inicialização: {str(e)}")
