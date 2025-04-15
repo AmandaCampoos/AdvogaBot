@@ -83,3 +83,50 @@ def init_rag_system():
     except Exception as e:
         st.error(f"Erro crítico durante inicialização: {str(e)}")
         return None
+
+# Interface do chat simplificada e robusta
+def main():
+    st.markdown("""
+    Sistema de consulta jurídica com RAG usando:
+    - **Amazon Bedrock** (Claude v2)
+    - **ChromaDB** para busca vetorial
+    """)
+    
+    qa_chain = init_rag_system()
+    
+    if qa_chain is None:
+        st.error("⚠️ O sistema não pôde ser inicializado. Verifique os logs para detalhes.")
+        return
+    
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+    
+    if prompt := st.chat_input("Faça sua pergunta jurídica"):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        
+        with st.chat_message("assistant"):
+            with st.spinner("Processando consulta..."):
+                try:
+                    result = qa_chain.invoke({"query": prompt})
+                    response = result["result"]
+                    
+                    st.markdown(response)
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+                    
+                    with st.expander("📄 Ver documentos de referência"):
+                        for doc in result["source_documents"]:
+                            st.markdown(f"**Fonte:** {doc.metadata.get('source', 'Desconhecida')}")
+                            st.markdown(f"**Trecho relevante:**\n{doc.page_content[:300]}...")
+                
+                except Exception as e:
+                    st.error(f"Erro ao processar sua pergunta: {str(e)}")
+
+if __name__ == "__main__":
+    main()
