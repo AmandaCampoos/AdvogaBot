@@ -54,6 +54,18 @@ def init_rag_system():
             template=prompt_template,
             input_variables=["context", "question"]
         )
+        
+        # Configuração do LLM com parâmetros otimizados
+        llm = BedrockLLM(
+            client=bedrock_client,
+            model_id="anthropic.claude-v2",                                                #adicionar modelo do LLM                            
+            model_kwargs={
+                "max_tokens_to_sample": 2048,
+                "temperature": 0.3,
+                "top_p": 0.9
+            }
+        )
+    
     
     except Exception as e:
         st.error(f"Erro crítico durante inicialização: {str(e)}")
