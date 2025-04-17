@@ -1,7 +1,6 @@
 # Volume EBS para ChromaDB
-
 resource "aws_ebs_volume" "chroma_volume" {
-  availability_zone = aws_instance.chatbot.availability_zone
+  availability_zone = aws_instance.sprint7_instance.availability_zone
   size              = 5  # GB
   type              = "gp3"
 
@@ -14,5 +13,5 @@ resource "aws_ebs_volume" "chroma_volume" {
 resource "aws_volume_attachment" "chroma_attachment" {
   device_name = "/dev/sdf"
   volume_id   = aws_ebs_volume.chroma_volume.id
-  instance_id = aws_instance.chatbot.id
-}  
+  instance_id = aws_instance.sprint7_instance.id
+}
