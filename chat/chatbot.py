@@ -1,17 +1,21 @@
-import os
-import streamlit as st
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from langchain_aws.embeddings import BedrockEmbeddings
-from langchain_aws.llms import BedrockLLM
 from langchain_chroma import Chroma
-from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
 import boto3
+import os
+import json
+from dotenv import load_dotenv
 
-# Configuração da página
-st.set_page_config(page_title="Assistente Jurídico", page_icon="⚖️")
+# Configuração do ambiente
+load_dotenv()
 
-# Título da aplicação
-st.title("⚖️ Assistente Jurídico")
+# Inicialização da API
+app = FastAPI()
+
+# Modelo para entrada do usuário
+class QueryRequest(BaseModel):
+    question: str
 
 # Inicialização dos componentes RAG
 def initialize_system():
@@ -88,51 +92,3 @@ def process_query(user_query):
         return generated_text, docs
     except Exception as e:
         raise ValueError(f"Erro ao processar a consulta: {str(e)}")
-
-
-# Interface do chat simplificada e robusta
-def main():
-    st.markdown("""
-    Sistema de consulta jurídica com RAG usando:
-    - **Amazon Bedrock** (Claude v2)
-    - **ChromaDB** para busca vetorial
-    """)
-    
-    qa_chain = init_rag_system()
-    
-    if qa_chain is None:
-        st.error("⚠️ O sistema não pôde ser inicializado. Verifique os logs para detalhes.")
-        return
-    
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-    
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-    
-    if prompt := st.chat_input("Faça sua pergunta jurídica"):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        
-        with st.chat_message("user"):
-            st.markdown(prompt)
-        
-        with st.chat_message("assistant"):
-            with st.spinner("Processando consulta..."):
-                try:
-                    result = qa_chain.invoke({"query": prompt})
-                    response = result["result"]
-                    
-                    st.markdown(response)
-                    st.session_state.messages.append({"role": "assistant", "content": response})
-                    
-                    with st.expander("📄 Ver documentos de referência"):
-                        for doc in result["source_documents"]:
-                            st.markdown(f"**Fonte:** {doc.metadata.get('source', 'Desconhecida')}")
-                            st.markdown(f"**Trecho relevante:**\n{doc.page_content[:300]}...")
-                
-                except Exception as e:
-                    st.error(f"Erro ao processar sua pergunta: {str(e)}")
-
-if __name__ == "__main__":
-    main()
