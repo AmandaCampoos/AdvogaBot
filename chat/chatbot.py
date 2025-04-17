@@ -13,76 +13,34 @@ st.set_page_config(page_title="Assistente Jurídico", page_icon="⚖️")
 # Título da aplicação
 st.title("⚖️ Assistente Jurídico")
 
-# Inicialização do sistema com tratamento robusto de erros
-@st.cache_resource
-def init_rag_system():
+# Inicialização dos componentes RAG
+def initialize_system():
     try:
         # Configuração do cliente Bedrock
         bedrock_client = boto3.client(
             service_name="bedrock-runtime",
             region_name="us-east-1",
             aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-            aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
+            aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+            aws_session_token=os.getenv("AWS_SESSION_TOKEN")
         )
 
+        # Configuração do ChromaDB para recuperação
         embeddings = BedrockEmbeddings(
             client=bedrock_client,
-            model_id="amazon.titan-embed-text-v1",
+            model_id="amazon.titan-embed-text-v2:0"
         )
-        
-        # Configuração do ChromaDB - com tratamento adicional
         vectorstore = Chroma(
             persist_directory="/rag_juridico/chroma_db/chroma.sqlite3",
             embedding_function=embeddings
         )
-        
-        # Template de prompt otimizado
-        prompt_template = """
-        Você é um assistente jurídico especializado em consulta de documentos legais. Baseie suas respostas estritamente nos documentos fornecidos.
-        Se não souber a resposta, diga que não encontrou informações suficientes.
-        
-        Contexto: 
-        {context}
-        
-        Pergunta: 
-        {question}
-        
-        Resposta jurídica:
-        """
-        
-        PROMPT = PromptTemplate(
-            template=prompt_template,
-            input_variables=["context", "question"]
-        )
-        
-        # Configuração do LLM com parâmetros otimizados
-        llm = BedrockLLM(
-            client=bedrock_client,
-            model_id="anthropic.claude-v2",                                                #adicionar modelo do LLM                            
-            model_kwargs={
-                "max_tokens_to_sample": 2048,
-                "temperature": 0.3,
-                "top_p": 0.9
-            }
-        )
-        
-        # Criação da cadeia RAG com configuração robusta
-        qa_chain = RetrievalQA.from_chain_type(
-            llm=llm,
-            chain_type="stuff",
-            retriever=vectorstore.as_retriever(
-                search_type="similarity",
-                search_kwargs={"k": 3}
-            ),
-            chain_type_kwargs={"prompt": PROMPT},
-            return_source_documents=True
-        )
-        
-        return qa_chain
-    
+
+        return vectorstore, bedrock_client
     except Exception as e:
-        st.error(f"Erro crítico durante inicialização: {str(e)}")
-        return None
+        raise RuntimeError(f"Erro ao inicializar o sistema: {str(e)}")
+
+# Inicializar os componentes no início
+vectorstore, bedrock_client = initialize_system()
 
 # Função para processar a consulta
 def process_query(user_query):
