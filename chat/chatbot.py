@@ -84,6 +84,54 @@ def init_rag_system():
         st.error(f"Erro crítico durante inicialização: {str(e)}")
         return None
 
+# Função para processar a consulta
+def process_query(user_query):
+    try:
+        # Recupera documentos relevantes do ChromaDB
+        retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 3})
+        docs = retriever.invoke(user_query)
+
+        context = "\n\n".join([doc.page_content for doc in docs])
+
+        # Criação da mensagem no formato esperado
+        input_text = f"""
+        Você é um assistente jurídico especializado em consulta de documentos legais. 
+        Baseie suas respostas estritamente nos documentos fornecidos.
+        Se não encontrar documentos relevantes, responda somente com "Desculpe, não consegui encontrar informações relevantes nos documentos fornecidos." e não mostre mais nada.
+        Pergunta: {user_query}
+        Contexto: {context}
+        """
+
+        body = {
+            "inputText": input_text,
+            "textGenerationConfig": {
+                "maxTokenCount": 8192,
+                "stopSequences": [],
+                "temperature": 0,
+                "topP": 1
+            }
+        }
+
+        # Envia a mensagem para o Bedrock usando o cliente boto3
+        response = bedrock_client.invoke_model( 
+            modelId="amazon.titan-text-express-v1",  
+            body=json.dumps(body),  
+            contentType="application/json", 
+            accept="application/json" 
+        )
+
+        # A resposta virá em formato JSON
+        response_content = json.loads(response['body'].read().decode('utf-8'))
+
+        # Retorna a resposta e os documentos de origem
+        generated_text = response_content.get("results", [{}])[0].get("outputText", "Sem resposta.")
+
+        # Retorna a resposta e os documentos de origem
+        return generated_text, docs
+    except Exception as e:
+        raise ValueError(f"Erro ao processar a consulta: {str(e)}")
+
+
 # Interface do chat simplificada e robusta
 def main():
     st.markdown("""
