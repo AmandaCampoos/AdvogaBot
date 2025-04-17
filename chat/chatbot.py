@@ -92,3 +92,26 @@ def process_query(user_query):
         return generated_text, docs
     except Exception as e:
         raise ValueError(f"Erro ao processar a consulta: {str(e)}")
+
+
+# Endpoint para consulta
+@app.post("/query")
+async def query(request: QueryRequest):
+    try:
+        response, docs = process_query(request.question)
+
+        # Montando as fontes
+        sources = [
+            {
+                "source": doc.metadata.get("source", "Desconhecida"),
+                "content_excerpt": doc.page_content[:300] + "..."
+            }
+            for doc in docs
+        ]
+
+        return {
+            "answer": response,
+            "sources": sources
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
