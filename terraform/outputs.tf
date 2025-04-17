@@ -1,12 +1,13 @@
 output "instance_id" {
-  description = "ID da instância EC2 criada"
-  value       = aws_instance.chatbot.id
+  description = "ID da instância EC2"
+  value       = aws_instance.sprint7_instance.id
 }
 
 output "public_ip" {
-  description = "IP público da instância EC2"
-  value       = aws_instance.chatbot.public_ip
+  description = "Endereço IP público da EC2"
+  value       = aws_instance.sprint7_instance.public_ip
 }
+
 
 output "s3_bucket_name" {
   description = "Nome do bucket S3 para os documentos jurídicos"
