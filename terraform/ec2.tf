@@ -1,5 +1,5 @@
 # Instância EC2 com ChromaDB configurado
-resource "aws_instance" "chatbot" {
+resource "aws_instance" "sprint7_instance" {
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.public.id
