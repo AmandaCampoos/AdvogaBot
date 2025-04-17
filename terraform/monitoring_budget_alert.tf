@@ -1,7 +1,11 @@
 
 # função para receber alertas no email, caso a conta AWS ultrapassar 15$ USD
 
-# SNS
+# =============================
+# MONITORAMENTO DE ORÇAMENTO
+# =============================
+
+# Tópico SNS para alertas de orçamento
 resource "aws_sns_topic" "budget_alerts" {
   name = "budget-alerts-topic"
 }
@@ -13,26 +17,19 @@ resource "aws_sns_topic_subscription" "budget_email" {
   endpoint  = "amanda.x.pb@compasso.com.br"
 }
 
-# Orçamento mensal 
+# Orçamento mensal com notificação quando atingir 100%
 resource "aws_budgets_budget" "monthly_cost_alert" {
-  name              = "monthly-cost-budget"
-  budget_type       = "COST"
-  limit_amount      = "15"
-  limit_unit        = "USD"
-  time_unit         = "MONTHLY"
+  name         = "monthly-cost-budget"
+  budget_type  = "COST"
+  limit_amount = "15"
+  limit_unit   = "USD"
+  time_unit    = "MONTHLY"
 
-  # time_period_start = formatdate("YYYY-MM-DD_hh:mm", timestamp()) # definir data(Opcional)
-
-  # Alerta quando ultrapassar 100% do valor
   notification {
-    comparison_operator = "GREATER_THAN"
-    threshold           = 100
-    threshold_type      = "PERCENTAGE"
-    notification_type   = "ACTUAL"
-
-    subscriber {
-      subscription_type = "SNS"
-      address           = aws_sns_topic.budget_alerts.arn
-    }
+    comparison_operator       = "GREATER_THAN"
+    threshold                 = 100
+    threshold_type            = "PERCENTAGE"
+    notification_type         = "ACTUAL"
+    subscriber_sns_topic_arns = [aws_sns_topic.budget_alerts.arn]
   }
 }
