@@ -23,15 +23,14 @@ resource "aws_instance" "sprint7_instance" {
               #!/bin/bash
               yum update -y
               yum install -y python3-pip git
-              pip3 install boto3 langchain chromadb pypdf
+              pip3 install boto3 langchain langchain-aws chromadb pypdf
 
               # Cria ponto de montagem e formata EBS (caso precise)
-              mkfs -t xfs /dev/nvme1n1 || true
+              mkfs -t xfs /dev/xvdf || true
               mkdir -p /mnt/chromadb
-              mount /dev/nvme1n1 /mnt/chromadb
-              echo "/dev/nvme1n1 /mnt/chromadb xfs defaults,nofail 0 2" >> /etc/fstab
+              mount /dev/xvdf /mnt/chromadb
+              echo "/dev/xvdf /mnt/chromadb xfs defaults,nofail 0 2" >> /etc/fstab
 
-              # Log de setup
               echo "Setup completo para ChromaDB" >> /var/log/user_data.log
               EOF
 }
