@@ -5,6 +5,7 @@ resource "aws_instance" "sprint7_instance" {
   subnet_id              = aws_subnet.public.id
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
   vpc_security_group_ids = [aws_security_group.default.id]
+  key_name               = aws_key_pair.sprint7_key.key_name
 
   tags = {
     Name       = "sprint7-instance"
