@@ -11,7 +11,7 @@ from langchain_community.vectorstores import Chroma
 
 # ================== CONFIGURAÇÕES ================== #
 class Config:
-    def _init_(self):
+    def __init__(self):
         self.S3_BUCKET = "amanda-rag-bucket"
         self.S3_PREFIX = "dataset/"
         self.LOCAL_DATASET_DIR = "/mnt/data/dataset"
@@ -23,7 +23,7 @@ class Config:
 
 # ================== PROCESSADOR DE DOCUMENTOS ================== #
 class DocumentProcessor:
-    def _init_(self, config: Config):
+    def __init__(self, config: Config):
         self.config = config
         self._setup_logging()
         self.embedding_model = self._get_embedding_model()
@@ -31,7 +31,7 @@ class DocumentProcessor:
 
     def _setup_logging(self):
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-        self.logger = logging.getLogger(_name_)
+        self.logger = logging.getLogger(__name__)
 
     def _get_embedding_model(self):
         if self.config.EMBEDDING_MODE == "BEDROCK":
@@ -119,7 +119,8 @@ class DocumentProcessor:
             print(f"📝 Conteúdo:\n{doc.page_content[:200]}...")
 
 # ================== EXECUÇÃO ================== #
-if _name_ == "_main_":
+if __name__ == "__main__":
+
     config = Config()
     processor = DocumentProcessor(config)
     
