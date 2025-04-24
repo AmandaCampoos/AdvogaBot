@@ -12,10 +12,11 @@ from langchain_community.vectorstores import Chroma
 # ================== CONFIGURAÇÕES ================== #
 class Config:
     def __init__(self):
-        self.S3_BUCKET = "amanda-rag-bucket"
+        self.S3_BUCKET = "roberta-rag-bucket"
         self.S3_PREFIX = "dataset/"
         self.LOCAL_DATASET_DIR = "/mnt/data/dataset"
         self.PERSIST_DIR = "/mnt/data/chroma_db"
+        self.COLLECTION_NAME = "juridico_chatbot"
         self.CHUNK_SIZE = 1000
         self.CHUNK_OVERLAP = 200
         self.MAX_FILES_LOG = 2
@@ -23,6 +24,12 @@ class Config:
 
 # ================== PROCESSADOR DE DOCUMENTOS ================== #
 class DocumentProcessor:
+    def extract_processo_number(self, text: str) -> str:
+        import re
+        """Tenta extrair o número do processo do texto."""
+        match = re.search(r'(?:n[ºo.]?\s*|processo[^\d]*)(\d{12})', text, re.IGNORECASE)
+        return match.group(1) if match else "desconhecido"
+
     def __init__(self, config: Config):
         self.config = config
         self._setup_logging()
@@ -65,6 +72,8 @@ class DocumentProcessor:
                     self.logger.info(f"📥 Baixado: {key} → {dest_path}")
 
     def load_documents(self) -> List[Document]:
+        import re
+
         self.logger.info("📂 Carregando documentos...")
         pdf_files = list(Path(self.config.LOCAL_DATASET_DIR).rglob("*.pdf"))
         documents = []
@@ -73,10 +82,12 @@ class DocumentProcessor:
                 loader = PyPDFLoader(str(pdf_path))
                 pages = loader.load()
                 for page in pages:
+                    processo_num = self.extract_processo_number(page.page_content)
                     page.metadata.update({
                         "source": str(pdf_path),
                         "file_name": pdf_path.name,
-                        "folder": str(pdf_path.parent.relative_to(self.config.LOCAL_DATASET_DIR))
+                        "folder": str(pdf_path.parent.relative_to(self.config.LOCAL_DATASET_DIR)),
+                        "processo": processo_num
                     })
                 documents.extend(pages)
                 if i < self.config.MAX_FILES_LOG:
@@ -101,7 +112,8 @@ class DocumentProcessor:
         self.vectordb = Chroma.from_documents(
             documents=chunks,
             embedding=self.embedding_model,
-            persist_directory=self.config.PERSIST_DIR
+            persist_directory=self.config.PERSIST_DIR,
+            collection_name=self.config.COLLECTION_NAME
         )
         self.vectordb.persist()
         self.logger.info("📦 Base de conhecimento criada!")
@@ -118,7 +130,7 @@ class DocumentProcessor:
             print(f"📁 Pasta: {doc.metadata['folder']}")
             print(f"📝 Conteúdo:\n{doc.page_content[:200]}...")
 
-# ================== EXECUÇÃO ================== #
+# ================== EXECUÇÃO! ================== #
 if __name__ == "__main__":
 
     config = Config()
