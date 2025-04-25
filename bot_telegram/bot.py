@@ -42,3 +42,12 @@ async def responder(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logging.error(f"Erro ao buscar resposta da API: {e}")
         await update.message.reply_text("⚠️ Ocorreu um erro ao consultar a resposta.")
+
+if __name__ == "__main__":
+    app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, responder))
+
+    print("Bot está rodando...")
+    app.run_polling()
