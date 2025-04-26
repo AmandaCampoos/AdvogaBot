@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  bot_telegram:
+    build:
+      context: ../bot_telegram
+    container_name: bot_telegram
+    restart: always
+    env_file:
+      - ../bot_telegram/.env
+    ports:
+      - "8001:8001" # Caso você precise expor algo
+    command: ["python", "bot.py"]
+
+  chatbot_api:
+    build:
+      context: ../chat
+    container_name: chatbot_api
+    restart: always
+    env_file:
+      - ../chat/.env
+    ports:
+      - "8000:8000"
+    command: ["python", "chatbot.py"]
