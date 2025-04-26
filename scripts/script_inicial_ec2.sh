@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -e
 
 echo "📦 Atualizando pacotes..."
@@ -25,3 +26,11 @@ echo "🚀 Subindo containers..."
 docker compose up -d --build
 
 echo "✅ Tudo pronto! Bot rodando!"
+
+# comentarios 
+# 1. O script atualiza os pacotes do sistema , instala o Docker e o Docker Compose, configura as permissões do usuário atual para usar o Docker 
+# 2. Clona o repositório do projeto e sobe os containers do Docker.
+# 3. depois de mandar o script com 'scp -i "suachave.pem" ...scripts/script_inicial_ec2.sh ec2-user@SEU_IP_PUBLICO.compute-1.amazonaws.com:~/'
+# 4. você pode executar o script com 'chmod +x script_inicial_ec2.sh
+#./script_inicial_ec2.sh'
+'
