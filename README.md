@@ -2,6 +2,16 @@
 
 # ⚖️ AdvogaBot
 
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-000000?style=for-the-badge&logo=langchain&logoColor=white)
+![Telegram Bot](https://img.shields.io/badge/Telegram_Bot-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Amazon AWS](https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white)
+![Amazon EC2](https://img.shields.io/badge/EC2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white)
+![Amazon S3](https://img.shields.io/badge/S3-569A31?style=for-the-badge&logo=amazons3&logoColor=white)
+![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)
+
 <div align="center">
   <img src="assets/AdvogaBot-2.jpg" alt="AdvogaBot" width="300" height="300">
 </div>
@@ -13,6 +23,42 @@
 
 ---
 
+## 🚀 Como rodar o bot do Telegram:
+
+### 1. Clone este repositório
+```bash
+git clone https://github.com/Compass-pb-aws-2025-JANEIRO/sprints-7-8-pb-aws-janeiro.git
+cd bot_telegram
+```
+### 2. Crie e ative um ambiente virtual
+```bash
+python -m venv .venv
+source .venv/bin/activate # Para Linux
+.venv\Scripts\activate # Para Windows
+```
+### 3. Instale as dependências
+```bash
+pip install -r requirements.txt
+```
+### 4. Configure as variáveis de ambiente
+Crie um arquivo .env no diretório onde o bot está com o seguinte conteúdo:
+```bash
+TELEGRAM_BOT_TOKEN=seu_token_aqui
+```
+🔐 Como obter o token do Telegram?
+
+#####  1. Abra o Telegram e procure por @BotFather
+
+##### 2. Inicie uma conversa e envie o comando /newbot
+
+##### 3.Siga as instruções para nomear seu bot
+
+##### 4. O BotFather fornecerá um token de acesso, copie e cole no seu .env
+
+### 5. Execute o bot
+```bash
+python bot.py
+```
 ## 👥 Time de Desenvolvimento
 
 <div align="center">
