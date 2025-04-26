@@ -5,7 +5,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 import logging 
 import requests
-from cloudwatch_logger import log_to_cloudwatch
+from logger.cloudwatch_logger import log_to_cloudwatch
 
 # Carrega variáveis do arquivo .env
 dotenv_path = Path(__file__).resolve().parent / ".env"
