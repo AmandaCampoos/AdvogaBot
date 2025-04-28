@@ -25,7 +25,7 @@ echo "🔑 Configurando permissões para o usuário atual..."
 sudo usermod -aG docker $USER
 # newgrp docker   
 
-# Clona o repositório com ssh
+# Clona o repositório com ssh -
 # OBS : voce precisa ter configurado o ssh-agent e adicionado a chave privada para conseguir clonar o repósitorio
 
 echo "📂 Clonando repositório..."
