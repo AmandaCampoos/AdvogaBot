@@ -1,15 +1,15 @@
 # Usar imagem oficial Python
 FROM python:3.11-slim
 
-# Setar diretório de trabalho
+# Setar diretório de trabalho dentro do container
 WORKDIR /app
 
-# Copiar os arquivos do projeto para o container
-COPY bot_telegram/ ./bot_telegram
-COPY chat/ ./chat
-COPY rag_juridico/ ./rag_juridico
-COPY dataset/ ./dataset
-COPY docker/requirements.txt ./requirements.txt
+# Copiar os arquivos do projeto (subindo um nível com `../`)
+COPY ../bot_telegram ./bot_telegram
+COPY ../chat ./chat
+COPY ../rag_juridico ./rag_juridico
+COPY ../dataset ./dataset
+COPY requirements.txt ./requirements.txt
 
 # Instalar dependências do projeto
 RUN pip install --no-cache-dir -r requirements.txt
