@@ -4,18 +4,15 @@ FROM python:3.11-slim
 # Setar diretório de trabalho
 WORKDIR /app
 
-# Copiar os arquivos necessários
+# Copiar os arquivos do projeto para o container
 COPY bot_telegram/ ./bot_telegram
 COPY chat/ ./chat
 COPY rag_juridico/ ./rag_juridico
 COPY dataset/ ./dataset
 COPY docker/requirements.txt ./requirements.txt
 
-# Instalar as dependências
+# Instalar dependências do projeto
 RUN pip install --no-cache-dir -r requirements.txt
 
-
-# COPY .env .env
-
-# Comando para iniciar o bot
+# Comando para iniciar o bot do Telegram
 CMD ["python", "bot_telegram/bot.py"]
