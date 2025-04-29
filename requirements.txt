@@ -1,0 +1,6 @@
+# Adicionando as dependências do projeto
+python-telegram-bot==20.8
+boto3
+requests
+python-dotenv
+
