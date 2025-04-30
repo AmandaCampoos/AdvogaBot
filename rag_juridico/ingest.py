@@ -9,6 +9,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 
 
+# ======CONFIGURAÇÕES======
 class Config:
     def _init_(self):
         self.S3_BUCKET = "roberta-rag-bucket"
@@ -22,6 +23,7 @@ class Config:
         self.EMBEDDING_MODE = "BEDROCK"
 
 
+# ======PROCESSADOR DE DOCUMENTOS======
 class DocumentProcessor:
     def extract_processo_number(self, text: str) -> str:
         import re
@@ -34,10 +36,12 @@ class DocumentProcessor:
         self.embedding_model = self._get_embedding_model()
         self.vectordb = None
 
+    # ======CONFIGURAÇÃO DE LOGS======
     def _setup_logging(self):
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         self.logger = logging.getLogger(_name_)
 
+    # ======CONFIGURAÇÃO DO MODELO DE EMBEDDINGS======
     def _get_embedding_model(self):
         if self.config.EMBEDDING_MODE == "BEDROCK":
             from langchain_aws import BedrockEmbeddings
@@ -45,6 +49,7 @@ class DocumentProcessor:
         from langchain_core.embeddings import FakeEmbeddings
         return FakeEmbeddings(size=384)
 
+    # ======DOWNLOAD DOS ARQUIVOS PDF DO S3======
     def download_pdfs_from_s3(self):
         self.logger.info("⬇ Baixando PDFs do S3...")
         s3 = boto3.client('s3')
@@ -60,6 +65,7 @@ class DocumentProcessor:
                     s3.download_file(self.config.S3_BUCKET, key, str(dest_path))
                     self.logger.info(f"📥 Baixado: {key} → {dest_path}")
 
+    # ======CARREGAMENTO DOS DOCUMENTOS======
     def load_documents(self) -> List[Document]:
         self.logger.info("📂 Carregando documentos...")
         pdf_files = list(Path(self.config.LOCAL_DATASET_DIR).rglob("*.pdf"))
@@ -84,6 +90,7 @@ class DocumentProcessor:
         self.logger.info(f"📄 Total de páginas: {len(documents)}")
         return documents
 
+    # ======DIVISÃO DOS DOCUMENTOS EM CHUNKS======
     def split_documents(self, documents: List[Document]) -> List[Document]:
         self.logger.info("✂ Dividindo textos...")
         splitter = RecursiveCharacterTextSplitter(chunk_size=self.config.CHUNK_SIZE, chunk_overlap=self.config.CHUNK_OVERLAP)
@@ -91,6 +98,7 @@ class DocumentProcessor:
         self.logger.info(f"🔖 Total de pedaços: {len(chunks)}")
         return chunks
 
+    # ======CRIAÇÃO DO BANCO DE VETORES======
     def create_vector_store(self, chunks: List[Document]):
         self.logger.info("🔄 Gerando embeddings...")
         self.vectordb = Chroma.from_documents(
@@ -102,6 +110,7 @@ class DocumentProcessor:
         self.vectordb.persist()
         self.logger.info(f"📦 Base criada com {self.vectordb._collection.count()} vetores")
 
+    # ======CONSULTA À BASE VETORIAL======
     def show_results(self, query: str = "lei", k: int = 2):
         if not self.vectordb:
             self.logger.error("⚠ Banco de vetores não criado!")
@@ -115,6 +124,7 @@ class DocumentProcessor:
             print(f"📝 Conteúdo:\n{doc.page_content[:200]}...")
 
 
+# ======EXECUÇÃO PRINCIPAL======
 if _name_ == "_main_":
     config = Config()
     processor = DocumentProcessor(config)
@@ -125,4 +135,4 @@ if _name_ == "_main_":
         processor.create_vector_store(chunks)
         processor.show_results()
     except Exception as e:
-        processor.logger.error(f"🚨 Erro no processamento: {e}")
+        processor.logger.error(f"🚨 Erro no processamento: {e}")
