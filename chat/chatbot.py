@@ -68,7 +68,24 @@ def process_query(user_query):
         retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 3})
         docs = retriever.invoke(user_query)
 
+        if not docs:
+            print("⚠️ Nenhum documento relevante encontrado para a consulta.")
+            return "Nenhum documento relevante encontrado.", []
+
+        # [DEBUG] Informações detalhadas dos documentos recuperados
+        print("\n[DEBUG] Documentos recuperados e relevância:")
+        for i, doc in enumerate(docs):
+            print(f"Documento {i + 1}:")
+            print(f"📂 Origem: {doc.metadata.get('file_name', 'Desconhecida')}")
+            print(f"📝 Conteúdo: {doc.page_content[:500]}...")
+            print(f"📊 Metadados: {doc.metadata}")
+            print(f"{'-' * 50}")
+
         context = "\n\n".join([doc.page_content for doc in docs])
+
+        # Verifica o conteúdo do contexto antes de enviar ao Bedrock
+        print("\n[DEBUG] Contexto gerado para o Bedrock:")
+        print(context)
 
         # Criação da mensagem no formato esperado
         input_text = f"""
