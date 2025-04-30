@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from langchain_aws.embeddings import BedrockEmbeddings
-from langchain_chroma import Chroma
+from langchain_community.vectorstores import Chroma
+from chromadb.config import Settings
+
 import boto3
 import os
 import json
@@ -44,9 +46,9 @@ def initialize_system():
         collection_name = "juridico_chatbot"
 
         vectorstore = Chroma(
-            persist_directory=persist_dir,
             embedding_function=embeddings,
-            collection_name=collection_name
+            collection_name=collection_name,
+            client_settings=Settings(persist_directory=persist_dir)
         )
 
         # Verificar se o banco foi carregado corretamente
