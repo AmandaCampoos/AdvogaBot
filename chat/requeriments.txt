@@ -4,6 +4,6 @@ chromadb
 fastapi
 pydantic
 langchain-aws
-langchain-chroma
+langchain-community
 boto3
 python-dotenv
