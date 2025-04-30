@@ -32,3 +32,4 @@ terraform.tfvars
 *.swp
 *.bak
 *.tmp
+terraform/sprint7-key.pem
