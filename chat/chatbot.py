@@ -80,28 +80,38 @@ def process_query(user_query):
         """
 
         body = {
-            "inputText": input_text,
-            "textGenerationConfig": {
-                "maxTokenCount": 8192,
-                "stopSequences": [],
-                "temperature": 0,
-                "topP": 1
+            "modelId": "amazon.nova-pro-v1:0",
+            "contentType": "application/json",
+            "accept": "application/json",
+            "body": {
+                "inferenceConfig": {
+                    "max_new_tokens": 1000,
+                    "temperature": 0.0,
+                },
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "text": input_text
+                            }
+                        ]
+                    }
+                ]
             }
         }
 
         # Envia a mensagem para o Bedrock usando o cliente boto3
         response = bedrock_client.invoke_model( 
-            modelId="amazon.titan-text-express-v1",  
-            body=json.dumps(body),  
+            modelId="amazon.nova-pro-v1:0",
+            body=json.dumps(body["body"]),  
             contentType="application/json", 
             accept="application/json" 
         )
 
-        # A resposta virá em formato JSON
+         # Parse da resposta
         response_content = json.loads(response['body'].read().decode('utf-8'))
-
-        # Retorna a resposta e os documentos de origem
-        generated_text = response_content.get("results", [{}])[0].get("outputText", "Sem resposta.")
+        generated_text = response_content.get("messages", [{}])[0].get("content", [{}])[0].get("text", "Sem resposta.")
 
         # Retorna a resposta e os documentos de origem
         return generated_text, docs
@@ -110,7 +120,7 @@ def process_query(user_query):
 
 
 # Endpoint para consulta
-@app.post("/query")
+@app.post("/query", response_model=QueryResponse)
 async def query(request: QueryRequest):
     try:
         response, docs = process_query(request.question)
