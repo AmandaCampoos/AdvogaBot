@@ -1,0 +1,32 @@
+name: Deploy Bot Telegram e Chatbot na EC2
+
+on:
+  push:
+    branches:
+      - grupo-2  # dispara o deploy quando der push na main
+  workflow_dispatch:  # permite disparar manualmente também
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+
+      - name: Acessar EC2 e fazer deploy
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
+            cd ~/seu-diretorio-projeto  # Muda aqui pro caminho onde seu projeto fica na EC2
+            git pull origin main
+
+            # Build e sobe os containers
+            docker-compose down
+            docker-compose build
+            docker-compose up -d
+          EOF

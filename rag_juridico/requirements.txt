@@ -1,0 +1,6 @@
+boto3
+langchain-core
+langchain-community
+langchain-aws
+chromadb
+pypdf
