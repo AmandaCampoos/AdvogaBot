@@ -1,18 +1,18 @@
 # Usar imagem oficial Python
 FROM python:3.11-slim
 
-# Setar diretório de trabalho dentro do container
+# Setar diretório de trabalho
 WORKDIR /app
 
-# Copiar os arquivos do projeto (subindo um nível com `../`)
+# Copiar os diretórios do projeto para dentro do container
 COPY ../bot_telegram ./bot_telegram
 COPY ../chat ./chat
 COPY ../rag_juridico ./rag_juridico
 COPY ../dataset ./dataset
-COPY requirements.txt ./requirements.txt
+COPY ../requirements.txt ./requirements.txt
 
-# Instalar dependências do projeto
+# Instalar dependências
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Comando para iniciar o bot do Telegram
-CMD ["python", "bot_telegram/bot.py"]
+CMD ["python", "bot_telegram/src/bot.py"]
