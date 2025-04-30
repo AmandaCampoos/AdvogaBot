@@ -9,9 +9,8 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 
 
-# ================== CONFIGURAÇÕES ================== #
 class Config:
-    def __init__(self):
+    def _init_(self):
         self.S3_BUCKET = "roberta-rag-bucket"
         self.S3_PREFIX = "dataset/"
         self.LOCAL_DATASET_DIR = "/mnt/data/dataset"
@@ -20,17 +19,16 @@ class Config:
         self.CHUNK_SIZE = 1000
         self.CHUNK_OVERLAP = 200
         self.MAX_FILES_LOG = 2
-        self.EMBEDDING_MODE = "BEDROCK"  # "LOCAL" ou "BEDROCK"
+        self.EMBEDDING_MODE = "BEDROCK"
 
-# ================== PROCESSADOR DE DOCUMENTOS ================== #
+
 class DocumentProcessor:
     def extract_processo_number(self, text: str) -> str:
         import re
-        """Tenta extrair o número do processo do texto."""
         match = re.search(r'(?:n[ºo.]?\s*|processo[^\d]*)(\d{12})', text, re.IGNORECASE)
         return match.group(1) if match else "desconhecido"
 
-    def __init__(self, config: Config):
+    def _init_(self, config: Config):
         self.config = config
         self._setup_logging()
         self.embedding_model = self._get_embedding_model()
@@ -38,33 +36,24 @@ class DocumentProcessor:
 
     def _setup_logging(self):
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(_name_)
 
     def _get_embedding_model(self):
         if self.config.EMBEDDING_MODE == "BEDROCK":
-            self.logger.info("🔧 Modo AWS Bedrock ativado")
             from langchain_aws import BedrockEmbeddings
-            return BedrockEmbeddings(
-                model_id="amazon.titan-embed-text-v2:0",
-                region_name="us-east-1"
-            )
-        else:
-            self.logger.info("🔧 Modo local ativado")
-            from langchain_core.embeddings import FakeEmbeddings
-            return FakeEmbeddings(size=384)
+            return BedrockEmbeddings(model_id="amazon.titan-embed-text-v2:0", region_name="us-east-1")
+        from langchain_core.embeddings import FakeEmbeddings
+        return FakeEmbeddings(size=384)
 
     def download_pdfs_from_s3(self):
-        """Baixa PDFs do S3 para o volume local"""
-        self.logger.info("⬇️ Baixando PDFs do S3...")
+        self.logger.info("⬇ Baixando PDFs do S3...")
         s3 = boto3.client('s3')
         paginator = s3.get_paginator('list_objects_v2')
         pages = paginator.paginate(Bucket=self.config.S3_BUCKET, Prefix=self.config.S3_PREFIX)
-
         for page in pages:
             for obj in page.get("Contents", []):
                 key = obj["Key"]
                 if key.endswith(".pdf"):
-                    # Mantém estrutura de pastas
                     relative_path = Path(key).relative_to(self.config.S3_PREFIX)
                     dest_path = Path(self.config.LOCAL_DATASET_DIR) / relative_path
                     dest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -72,8 +61,6 @@ class DocumentProcessor:
                     self.logger.info(f"📥 Baixado: {key} → {dest_path}")
 
     def load_documents(self) -> List[Document]:
-        import re
-
         self.logger.info("📂 Carregando documentos...")
         pdf_files = list(Path(self.config.LOCAL_DATASET_DIR).rglob("*.pdf"))
         documents = []
@@ -98,11 +85,8 @@ class DocumentProcessor:
         return documents
 
     def split_documents(self, documents: List[Document]) -> List[Document]:
-        self.logger.info("✂️ Dividindo textos...")
-        splitter = RecursiveCharacterTextSplitter(
-            chunk_size=self.config.CHUNK_SIZE,
-            chunk_overlap=self.config.CHUNK_OVERLAP
-        )
+        self.logger.info("✂ Dividindo textos...")
+        splitter = RecursiveCharacterTextSplitter(chunk_size=self.config.CHUNK_SIZE, chunk_overlap=self.config.CHUNK_OVERLAP)
         chunks = splitter.split_documents(documents)
         self.logger.info(f"🔖 Total de pedaços: {len(chunks)}")
         return chunks
@@ -116,11 +100,11 @@ class DocumentProcessor:
             collection_name=self.config.COLLECTION_NAME
         )
         self.vectordb.persist()
-        self.logger.info("📦 Base de conhecimento criada!")
+        self.logger.info(f"📦 Base criada com {self.vectordb._collection.count()} vetores")
 
     def show_results(self, query: str = "lei", k: int = 2):
         if not self.vectordb:
-            self.logger.error("⚠️ Banco de vetores não criado!")
+            self.logger.error("⚠ Banco de vetores não criado!")
             return
         self.logger.info(f"\n🔍 Resultados para '{query}':")
         results = self.vectordb.similarity_search(query, k=k)
@@ -130,12 +114,10 @@ class DocumentProcessor:
             print(f"📁 Pasta: {doc.metadata['folder']}")
             print(f"📝 Conteúdo:\n{doc.page_content[:200]}...")
 
-# ================== EXECUÇÃO! ================== #
-if __name__ == "__main__":
 
+if _name_ == "_main_":
     config = Config()
     processor = DocumentProcessor(config)
-    
     try:
         processor.download_pdfs_from_s3()
         docs = processor.load_documents()
@@ -143,4 +125,4 @@ if __name__ == "__main__":
         processor.create_vector_store(chunks)
         processor.show_results()
     except Exception as e:
-        processor.logger.error(f"🚨 Erro no processamento: {e}")
+        processor.logger.error(f"🚨 Erro no processamento: {e}")
