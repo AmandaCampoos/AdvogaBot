@@ -17,6 +17,11 @@ app = FastAPI()
 class QueryRequest(BaseModel):
     question: str
 
+# Modelo para resposta da API
+class QueryResponse(BaseModel):
+    answer: str
+    sources: list[dict]
+
 # Inicialização dos componentes RAG
 def initialize_system():
     try:
@@ -34,10 +39,20 @@ def initialize_system():
             client=bedrock_client,
             model_id="amazon.titan-embed-text-v2:0"
         )
+
+        persist_dir = "/mnt/data/chroma_db"
+        collection_name = "juridico_chatbot"
+
         vectorstore = Chroma(
-            persist_directory="/rag_juridico/chroma_db/chroma.sqlite3",
-            embedding_function=embeddings
+            persist_directory=persist_dir,
+            embedding_function=embeddings,
+            collection_name=collection_name
         )
+
+        # Verificar se o banco foi carregado corretamente
+        indexed_docs = vectorstore._collection.count()
+        print(f"📂 Diretório de persistência: {persist_dir}")
+        print(f"✅ Total de documentos indexados: {indexed_docs}")
 
         return vectorstore, bedrock_client
     except Exception as e:
