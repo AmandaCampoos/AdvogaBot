@@ -1,0 +1,37 @@
+# Apenas um exemplo de arquivo de workflow do GitHub Actions para fazer o deploy do bot Telegram na EC2 (os bolsistas do pb não tem autorização para 'secrets')necessarias para que funcione esse arquivo worklows.
+# Esse arquivo deve ser colocado na pasta .github/workflows do repositório.
+# O workflow é acionado quando há um push na branch "grupo-2" ou quando é acionado manualmente.
+# O workflow faz o checkout do repositório, configura o SSH para acessar a EC2 e faz o deploy do bot Telegram.
+# O deploy consiste em acessar a EC2, fazer o pull da branch "grupo-2", parar e remover o container "bot" (se existir),construir a imagem do bot e rodar o container "bot" com a nova imagem.
+# Para que o workflow funcione , é necessário que as variáveis de ambiente "EC2_SSH_PRIVATE_KEY" e "EC2_PUBLIC_IP" estejam configuradas no repositório do Github.
+# Autor: Amanda Ximenes 
+name: Deploy Bot Telegram na EC2
+
+on:
+  push:
+    branches:
+      - grupo-2
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+
+      - name: Acessar EC2 e fazer deploy
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
+            cd ~/sprint7/sprints-7-8-pb-aws-janeiro
+            git pull origin grupo-2
+            docker stop bot || true && docker rm bot || true
+            docker build -t bot .
+            docker run -d --name bot bot
+          EOF
