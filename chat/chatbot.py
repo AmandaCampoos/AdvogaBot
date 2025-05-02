@@ -48,24 +48,37 @@ def initialize_system():
         print(f"📂 Diretório de persistência: {persist_dir}")
         print(f"✅ Total de documentos indexados: {indexed_docs}")
 
-        return vectorstore, bedrock_client
+        return vectorstore, bedrock_client, embeddings 
     except Exception as e:
         raise RuntimeError(f"Erro ao inicializar o sistema: {str(e)}")
 
 
-vectorstore, bedrock_client = initialize_system()
-
+vectorstore, bedrock_client, embeddings = initialize_system() 
 
 def process_query(user_query):
     try:
-        retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 3})
-        docs = retriever.invoke(user_query)
+        
+        # Busca documentos com score de similaridade
+        docs_with_score = vectorstore.similarity_search_with_score(user_query, k=3)
+        
+        # Define limiar de relevância
+        # Só considera documentos com score abaixo de 1.5
+        limiar_score = 1.5
+
+        # Retorno padronizado para casos sem documentos relevantes
+        docs = [doc for doc, score in docs_with_score if score <= limiar_score]
 
         if not docs:
-            return "Nenhum documento relevante encontrado.", []
+            return (
+                "⚠️ Desculpe, não consegui identificar uma pergunta jurídica válida. "
+                "Por favor, pergunte algo relacionado ao Direito ou aos documentos fornecidos.",
+                []
+            )
 
+        
         context = "\n\n".join([doc.page_content for doc in docs])
 
+        # Prompt estruturado com instruções para o modelo responder juridicamente
         input_text = f"""
         Você é um assistente jurídico altamente especializado, treinado para fornecer informações claras, precisas e fundamentadas sobre temas jurídicos. Seu objetivo é responder perguntas com base nos documentos fornecidos, sempre explicando seu raciocínio de forma detalhada e estruturada. Use o seguinte formato para suas respostas:
         1. Contextualização: Identifique o tema ou a área do direito relacionada à pergunta.
@@ -134,11 +147,21 @@ def process_query(user_query):
 
         response_content = json.loads(response['body'].read().decode('utf-8'))
         generated_text = response_content.get("output", {}).get("message", {}).get("content", [{}])[0].get("text", "Sem resposta.")
+        
+        # Ajustes de formatação para resposta via Telegram
+        generated_text = generated_text.replace("### Contextualização:", "📚 Contextualização ")
+        generated_text = generated_text.replace("### Análise Jurídica:", "🔍 Análise Jurídica ")
+        generated_text = generated_text.replace("### Resposta Final:", "✅ Conclusão ")
+        
+        # Remove marcações de markdown que o Telegram não entende
+        generated_text = generated_text.replace("**", "")  # remove negrito
+        generated_text = generated_text.replace("__", "")  # remove itálico
+
 
         return generated_text, docs
     except Exception as e:
+        print("🔴 ERRO COMPLETO DURANTE A CONSULTA:")
         raise ValueError(f"Erro ao processar a consulta: {str(e)}")
-
 
 @app.post("/query", response_model=QueryResponse)
 async def query(request: QueryRequest):
@@ -151,4 +174,6 @@ async def query(request: QueryRequest):
         return {"answer": response, "sources": sources}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
  
