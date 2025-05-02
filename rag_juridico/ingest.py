@@ -11,7 +11,7 @@ from langchain_community.vectorstores import Chroma
 
 # ======CONFIGURAÇÕES======
 class Config:
-    def _init_(self):
+    def __init__(self):
         self.S3_BUCKET = "roberta-rag-bucket"
         self.S3_PREFIX = "dataset/"
         self.LOCAL_DATASET_DIR = "/mnt/data/dataset"
@@ -30,7 +30,7 @@ class DocumentProcessor:
         match = re.search(r'(?:n[ºo.]?\s*|processo[^\d]*)(\d{12})', text, re.IGNORECASE)
         return match.group(1) if match else "desconhecido"
 
-    def _init_(self, config: Config):
+    def __init__(self, config: Config):
         self.config = config
         self._setup_logging()
         self.embedding_model = self._get_embedding_model()
@@ -39,7 +39,7 @@ class DocumentProcessor:
     # ======CONFIGURAÇÃO DE LOGS======
     def _setup_logging(self):
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-        self.logger = logging.getLogger(_name_)
+        self.logger = logging.getLogger(__name__)
 
     # ======CONFIGURAÇÃO DO MODELO DE EMBEDDINGS======
     def _get_embedding_model(self):
@@ -125,7 +125,7 @@ class DocumentProcessor:
 
 
 # ======EXECUÇÃO PRINCIPAL======
-if _name_ == "_main_":
+if __name__ == "__main__":
     config = Config()
     processor = DocumentProcessor(config)
     try:
