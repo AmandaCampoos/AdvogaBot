@@ -8,5 +8,5 @@ COPY . .
 # Instala as dependências da raiz
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Comando para iniciar o bot
-CMD ["python", "bot_telegram/src/bot.py"]
+# Roda a API FastAPI (ajuste o caminho se o FastAPI estiver em outro arquivo)
+CMD ["uvicorn", "chat.chatbot.py", "--host", "0.0.0.0", "--port", "8000"]
