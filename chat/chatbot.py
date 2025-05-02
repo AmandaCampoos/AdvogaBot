@@ -60,23 +60,37 @@ def process_query(user_query):
         
         # Busca documentos com score de similaridade
         docs_with_score = vectorstore.similarity_search_with_score(user_query, k=3)
-        
-        # Define limiar de relevância
-        # Só considera documentos com score abaixo de 1.5
-        limiar_score = 1.5
+       
+        # Define limiar de relevância, só considera documentos com score abaixo de 1.4
+        limiar_score = 1.4
 
         # Retorno padronizado para casos sem documentos relevantes
-        docs = [doc for doc, score in docs_with_score if score <= limiar_score]
+        tem_documento_relevante = any(score <= limiar_score for _, score in docs_with_score)
 
-        if not docs:
+        if not tem_documento_relevante:
             return (
                 "⚠️ Desculpe, não consegui identificar uma pergunta jurídica válida. "
                 "Por favor, pergunte algo relacionado ao Direito ou aos documentos fornecidos.",
                 []
             )
 
+        # Extrai apenas os documentos considerados válidos (todos, pois passaram no filtro geral)
+        docs = [doc for doc, _ in docs_with_score]
+
+        context = "\n\n".join([doc.page_content for doc in docs if doc.page_content])
         
-        context = "\n\n".join([doc.page_content for doc in docs])
+        # Verifica o conteúdo dos documentos antes de gerar o contexto
+        for idx, doc in enumerate(docs):
+            if not doc.page_content:
+                print(f"⚠️ Documento {idx} está vazio ou None")
+            else:
+                print(f"📄 Documento {idx} tem {len(doc.page_content)} caracteres")
+
+        # Gera o contexto apenas com conteúdos válidos
+        context = "\n\n".join([doc.page_content for doc in docs if doc.page_content])
+
+        # Loga o tamanho final do contexto
+        print(f"📚 Contexto total gerado para a pergunta: {len(context)} caracteres")
 
         # Prompt estruturado com instruções para o modelo responder juridicamente
         input_text = f"""
@@ -127,7 +141,7 @@ def process_query(user_query):
             "inferenceConfig": 
             {
                 "max_new_tokens": 1000, 
-                "temperature": 0.0
+                "temperature": 0
             },
             "messages": [{
                 "role": "user",
@@ -174,6 +188,7 @@ async def query(request: QueryRequest):
         return {"answer": response, "sources": sources}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+
 
  
