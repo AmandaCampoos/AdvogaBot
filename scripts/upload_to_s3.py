@@ -2,7 +2,8 @@ import boto3
 import os
 import argparse
 from zipfile import ZipFile
-
+# Esse script faz o upload de arquivos para um bucket s3 da AWS.
+# Ele descompacta arquivos zip 
 # === Argumentos CLI ===
 parser = argparse.ArgumentParser(description="Upload de arquivos para o S3")
 parser.add_argument('--profile', type=str, help="Nome do perfil AWS para usar", required=False)
@@ -17,7 +18,7 @@ else:
 s3 = session.client('s3')
 
 # === CONFIGURAÇÕES ===
-BUCKET_NAME = "jose-rag-bucket" # colocar o nome do seu bucket aqui
+BUCKET_NAME = "amanda-rag-bucket" # colocar o nome do seu bucket aqui
 LOCAL_FOLDER = "../dataset"
 PREFIX = "dataset/"
 
