@@ -3,4 +3,11 @@ python-telegram-bot==20.8
 boto3
 requests
 python-dotenv
+fastapi
+uvicorn
+langchain
+langchain_community
+langchain_aws
+chromadb
+
 
