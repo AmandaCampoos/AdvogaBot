@@ -60,7 +60,11 @@ def process_query(user_query):
         
         # Busca documentos com score de similaridade
         docs_with_score = vectorstore.similarity_search_with_score(user_query, k=3)
-       
+
+        print("\n🔎 Documentos recuperados com score:")
+        for doc, score in docs_with_score:
+            print(f"📄 Score: {score:.2f} | Conteúdo: {doc.page_content[:200]}...\n")
+
         # Define limiar de relevância, só considera documentos com score abaixo de 1.4
         limiar_score = 1.4
 
